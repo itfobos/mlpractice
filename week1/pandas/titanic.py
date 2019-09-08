@@ -1,7 +1,7 @@
 import pandas
 from titanic_extract_female_name import to_female_name
 
-DATA = pandas.read_csv('titanic.csv', index_col='PassengerId')
+DATA = pandas.read_csv('../data/titanic.csv', index_col='PassengerId')
 PASSENGER_COUNT = len(DATA)
 
 print('Male/female passengers')
