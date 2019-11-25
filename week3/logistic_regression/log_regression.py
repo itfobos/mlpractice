@@ -31,13 +31,13 @@ class LogRegressionClassifier:
         i = 0
         while i < iterations_limit:
             i = i + 1
-            x1_sum = self.__samples_sum(rows, w, DataIndex.X1)
-            x2_sum = self.__samples_sum(rows, w, DataIndex.X2)
+            x1_sum = self.__samples_sum(rows, [w1, w2], DataIndex.X1)
+            x2_sum = self.__samples_sum(rows, [w1, w2], DataIndex.X2)
 
             w1_new = w1 + k * x1_sum - k * c * w1
             w2_new = w2 + k * x2_sum - k * c * w2
 
-            print('w1 w2: %.5f %.5f      sums %.5f %.5f' % (w1_new, w2_new, x1_sum, x2_sum))
+            # print('w1 w2: %.5f %.5f      sums %.5f %.5f' % (w1_new, w2_new, x1_sum, x2_sum))
             # print(w1_new, w2_new)
 
             distance = np.sqrt((w1 - w1_new) ** 2 + (w2 - w2_new) ** 2)
@@ -51,6 +51,7 @@ class LogRegressionClassifier:
             print('Iterations limit break')
 
         self.__w = [w1, w2]
+        print('w1: %.5f,  w2: %.5f' % (w1, w2))
         return self.__w
 
     def predict(self, rows):
@@ -65,7 +66,7 @@ def a(w):
 
     def a_internal(row):
         c_pow = (-1 * w1 * row[DataIndex.X1] - w2 * row[DataIndex.X2])
-        print('(x1 x2) = (%.4f %.4f)  c_pow: %.4f' % (row[DataIndex.X1], row[DataIndex.X2], c_pow))
+        # print('(x1 x2) = (%.4f %.4f)  c_pow: %.4f' % (row[DataIndex.X1], row[DataIndex.X2], c_pow))
         return 1 / (1 + exp(c_pow))
 
     return a_internal
@@ -75,11 +76,11 @@ y_true = ROWS[:, 0]
 clf = LogRegressionClassifier()
 
 # Without normalization
-print(clf.fit(rows=ROWS, k=0.1, c=0, accuracy=0.00001, iterations_limit=100, w=[0.0, 0.0]))
+clf.fit(rows=ROWS, k=0.1, c=0, accuracy=0.00001, iterations_limit=10_000, w=[0.0, 0.0])
 y_scores = clf.predict(ROWS)
 print('Without normalization %.3f' % roc_auc_score(y_true, y_scores))
 
 # With normalization
-# print(clf.fit(rows=ROWS, k=0.1, c=10, accuracy=0.00001, iterations_limit=10000, w=[0.0, 0.0]))
-# y_scores = clf.predict(ROWS)
-# print('With normalization %.3f' % roc_auc_score(y_true, y_scores))
+clf.fit(rows=ROWS, k=0.1, c=10, accuracy=0.00001, iterations_limit=10000, w=[0.0, 0.0])
+y_scores = clf.predict(ROWS)
+print('With normalization %.3f' % roc_auc_score(y_true, y_scores))
