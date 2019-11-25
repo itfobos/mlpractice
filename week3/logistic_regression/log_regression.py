@@ -37,9 +37,6 @@ class LogRegressionClassifier:
             w1_new = w1 + k * x1_sum - k * c * w1
             w2_new = w2 + k * x2_sum - k * c * w2
 
-            # print('w1 w2: %.5f %.5f      sums %.5f %.5f' % (w1_new, w2_new, x1_sum, x2_sum))
-            # print(w1_new, w2_new)
-
             distance = np.sqrt((w1 - w1_new) ** 2 + (w2 - w2_new) ** 2)
             if distance < accuracy:
                 print('Distance break')
@@ -56,20 +53,10 @@ class LogRegressionClassifier:
 
     def predict(self, rows):
         w1, w2 = self.__w
-        # a = lambda row: 1 / (1 + exp(-1 * w1 * row[DataIndex.X1] - w2 * row[DataIndex.X2]))
-
-        return np.apply_along_axis(a(self.__w), axis=Axis.ROW, arr=rows)
-
-
-def a(w):
-    w1, w2 = w
-
-    def a_internal(row):
-        c_pow = (-1 * w1 * row[DataIndex.X1] - w2 * row[DataIndex.X2])
-        # print('(x1 x2) = (%.4f %.4f)  c_pow: %.4f' % (row[DataIndex.X1], row[DataIndex.X2], c_pow))
-        return 1 / (1 + exp(c_pow))
-
-    return a_internal
+        return np.apply_along_axis(
+            lambda row: 1 / (1 + exp(-1 * w1 * row[DataIndex.X1] - w2 * row[DataIndex.X2])),
+            axis=Axis.ROW,
+            arr=rows)
 
 
 y_true = ROWS[:, 0]
@@ -78,9 +65,13 @@ clf = LogRegressionClassifier()
 # Without normalization
 clf.fit(rows=ROWS, k=0.1, c=0, accuracy=0.00001, iterations_limit=10_000, w=[0.0, 0.0])
 y_scores = clf.predict(ROWS)
-print('Without normalization %.3f' % roc_auc_score(y_true, y_scores))
+noNormalizationScore = roc_auc_score(y_true, y_scores)
+print('Without normalization %.3f' % noNormalizationScore)
 
 # With normalization
 clf.fit(rows=ROWS, k=0.1, c=10, accuracy=0.00001, iterations_limit=10000, w=[0.0, 0.0])
 y_scores = clf.predict(ROWS)
-print('With normalization %.3f' % roc_auc_score(y_true, y_scores))
+withNormalizationScore = roc_auc_score(y_true, y_scores)
+print('With normalization %.3f' % withNormalizationScore)
+
+print('\n\nResult: %.3f %.3f' % (noNormalizationScore, withNormalizationScore))
